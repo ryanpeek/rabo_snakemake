@@ -37,3 +37,18 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# macosx
+*.DS_Store
+
+# SNAKEMAKE STUFF
+.snakemake
+
+# SLURM AND OUTPUTS STUFF
+inputs/*
+outputs/*
+slurms/*
+slurm-*
+
+# RMD OUTPUTS
+*.html
