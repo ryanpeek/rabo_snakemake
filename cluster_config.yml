@@ -1,0 +1,16 @@
+# cluster_config.yml - cluster configuration
+__default__:
+    account: millermrgrp
+    partition: high
+    mail-type: FAIL,TIME_LIMIT
+    mail-user: rapeek@ucdavis.edu
+    time: 1-00:05:00 # time of 1 day, 5 min (fmt = dd-hh:mm::ss)
+    mem: 4000
+    nodes: 1
+    ntasks-per-node: 8
+    output: slurms/slurm-%j.out
+    error: slurms/slurm-%j.err
+    job-name: '{rule}' # could use {output} or {rule}.{wildcards}
+    #chdir: '/home/rapeek/'
+    #logdir: '/home/rapeek/'
+
