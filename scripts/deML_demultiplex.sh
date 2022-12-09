@@ -15,3 +15,7 @@ error=$8	#name of error file
 
 # install in bin via git: git clone https://github.com/grenaud/deML.git and then "make" in dir
 ~/bin/deML/src/deML -i ${manifest} -f ${r1} -r ${r2} -if1 ${i1} -if2 ${i2} -o ${outpre} -s ${summary} -e ${error} --mm 1
+
+
+# run with
+# sbatch -t 1440 -p high scripts/deML_demultiplex.sh samples/frog_somm570_deML_manifest.csv inputs/SOMM570_S1_L002_R1_001.fastq.gz inputs/SOMM570_S1_L002_R2_001.fastq.gz inputs/skSOMM570_S1_L002_I1_001.fq.gz inputs/skSOMM570_S1_L002_I2_001.fq.gz inputs/somm570frog somm570_summary somm570_errors
