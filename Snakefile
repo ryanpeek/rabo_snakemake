@@ -1,5 +1,5 @@
 import pandas as pd
-m = pd.read_csv("samples/ronca_metadata_final.csv", header = 0)
+m = pd.read_csv("samples/2022_metadata_seq_samples_joined.csv", header = 0)
 PLATES = m['plate_barcode'].unique().tolist() 
 SAMPLES = m['well_barcodefull'].unique().tolist() # well barcode
 LANES = m['seqsomm'].unique().tolist() # somm
@@ -14,35 +14,35 @@ rule all:
     input: 
         expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
 	#expand("outputs/bamlists/{lane}_all.bamlist", lane = LANES)
-	expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
-	expand("outputs/pca/{lane}_pca_all.covMat", lane = LANES)
+	expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES)
+	#expand("outputs/pca/{lane}_pca_all.covMat", lane = LANES)
 
 # remove expand here so that it runs rule once instead twice (for each R1 and R2)
-rule unzip:
-    input: "../../ronca/raw/{lane}_CKDL200163818-1a_HCJKCCCX2_L7_{read}.fq.gz"
-    output: "inputs/fastq/{lane}_R{read}.fastq"
-    threads: 1
-    resources:
-        mem_mb=2000,
-	#tmpdir=TMPDIR,
-        time=2880
+#rule unzip:
+#    input: "../../ronca/raw/{lane}_CKDL200163818-1a_HCJKCCCX2_L7_{read}.fq.gz"
+#    output: "inputs/fastq/{lane}_R{read}.fastq"
+#    threads: 1
+#    resources:
+#        mem_mb=2000,
+#	 tmpdir=TMPDIR,
+#        time=2880
     #benchmark: "benchmarks/unzip_fastq_{lane}_R{read}.tsv"
-    shell:'''
-    gunzip -c {input} > {output}
-    '''
+#    shell:'''
+#    gunzip -c {input} > {output}
+#    '''
 
-rule plate_split_fastq:
-    input: "inputs/fastq/{lane}_R{read}.fastq"
-    output: "outputs/fastq_plate/{lane}_{plate}_R{read}.fastq"
-    threads: 1
-    resources:
-        mem_mb=2000,
-	#tmpdir=TMPDIR,
-        time=2880
-    benchmark: "benchmarks/plate_split_{lane}_{plate}_R{read}.tsv" 
-    shell:"""
-    grep --no-group-separator -A 3 ":{wildcards.plate}" {input} > {output}
-    """
+#rule plate_split_fastq:
+#    input: "inputs/fastq/sk{lane}_S1_L002_R00{read}.fastq"
+#    output: "outputs/fastq_plate/{lane}_{plate}_R{read}.fastq"
+#    threads: 1
+#    resources:
+#        mem_mb=2000,
+#	#tmpdir=TMPDIR,
+#        time=2880
+#    benchmark: "benchmarks/plate_split_{lane}_{plate}_R{read}.tsv" 
+#    shell:"""
+#    grep --no-group-separator -A 3 ":{wildcards.plate}" {input} > {output}
+#    """
 rule well_split_fastq:
     input: expand("outputs/fastq_plate/{{lane}}_{{plate}}_R{read}.fastq", read = READS)
     output: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{sample}.fastq", sample = SAMPLES, read = READS)
@@ -108,30 +108,30 @@ rule bam_stats:
     shell:"""
         samtools stats --threads {threads} {input} | grep ^SN | cut -f 2-4 > {output}
 	"""
-rule make_bamlist:
-    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
-    output: "outputs/bamlists/{lane}_all.bamlist"
-    threads: 1
-    shell:"""
-        ls {input} > {output}
-	"""
-rule make_pca:
-    input: 
-        bamlist = "outputs/bamlists/{lane}_all.bamlist",
-        ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa", # put in config file
-        bait_length = "bait_lengths.txt" # put in config file, add copy in github
-    output: "outputs/pca/{lane}_pca_all.covMat"
-    threads: 16
+#rule make_bamlist:
+#    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
+#    output: "outputs/bamlists/{lane}_all.bamlist"
+#    threads: 1
+#    shell:"""
+#        ls {input} > {output}
+#	"""
+#rule make_pca:
+#    input: 
+#        bamlist = "outputs/bamlists/{lane}_all.bamlist",
+#        ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa", # put in config file
+#        bait_length = "bait_lengths.txt" # put in config file, add copy in github
+#    output: "outputs/pca/{lane}_pca_all.covMat"
+#    threads: 16
     #conda: "envs/angsd.yml"
-    params: 
-        minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
-	covMat = lambda wildcards: "outputs/pca/" + wildcards.lane + "_pca_all"
-    resources:
-        time=1080,
-	mem_mb=lambda wildcards, attempt: attempt *8000
-    shell:"""
-        angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis {params.minInd} -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
-        """
+#    params: 
+#        minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
+#	covMat = lambda wildcards: "outputs/pca/" + wildcards.lane + "_pca_all"
+ #   resources:
+ #       time=1080,
+#	mem_mb=lambda wildcards, attempt: attempt *8000
+ #   shell:"""
+ #       angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis {params.minInd} -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
+ #       """
 
 # to add:
 # sfs
