@@ -46,3 +46,9 @@ gunzip -c r1.fastq.gz | head -n 400000 | grep ^GG | perl -ne 'while(m/^GG(\w{8})
 
 # Demultiplexing
 
+## Unzip Multiple files in parallel
+
+Important to do this in an interactive session. This unzips multiple files (8 in this case so 8 jobs in parallel).
+
+`parallel --jobs 8 gunzip {} ::: *.fq.gz`
+
