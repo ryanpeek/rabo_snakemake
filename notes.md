@@ -52,3 +52,11 @@ Important to do this in an interactive session. This unzips multiple files (8 in
 
 `parallel --jobs 8 gunzip {} ::: *.fq.gz`
 
+## Snakemake
+
+Ran this after unzipping:
+
+```
+snakemake -j 3 --use-conda --rerun-incomplete --latency-wait 15 --resources mem_mb=200000 --cluster "sbatch -t 1080 -J split -p high -n 1 -N 1" -k -n
+```
+
