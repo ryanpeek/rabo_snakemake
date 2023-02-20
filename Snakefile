@@ -44,8 +44,8 @@ rule all:
 #    grep --no-group-separator -A 3 ":{wildcards.plate}" {input} > {output}
 #    """
 rule well_split_fastq:
-    input: expand("outputs/fastq_plate/{{lane}}_{plate}_R{read}.fastq", read = READS, plate = PLATES)
-    output: expand("outputs/fastq_split/{{lane}}_{plate}_R{read}_{sample}.fastq", plate = PLATES, sample = SAMPLES, read = READS)
+    input: expand("outputs/fastq_plate/{{lane}}_{{plate}}_R{read}.fastq", read = READS)
+    output: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{sample}.fastq", sample = SAMPLES, read = READS)
     threads: 1
     resources:
         mem_mb=2000,
@@ -60,7 +60,7 @@ rule well_split_fastq:
 # rule to align and combine
 rule align_fastq:
     input: 
-        fq = expand("outputs/fastq_split/{{lane}}_{plate}_R{read}_{{sample}}.fastq", plate = PLATES, read = READS),
+        fq = expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{{sample}}.fastq", read = READS),
 	ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa"
     output: "outputs/bams/{lane}_{plate}_{sample}.sort.bam"
     conda: "envs/samtools_bwa.yml"
@@ -85,7 +85,7 @@ rule filter_bams:
         time=2880
     #benchmark: "benchmarks/filter_bams_{lane}_{plate}_{sample}.tsv"
     shell:"""
-        samtools view --threads {threads} -f 0x2 -b {input} | samtools rmdup --threads {threads} - {output}
+        samtools view --threads {threads} -f 0x2 -b {input} | samtools rmdup - {output}
         """
 
 rule index_bams:
