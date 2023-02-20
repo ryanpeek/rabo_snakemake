@@ -1,16 +1,25 @@
 
-# data here
-/home/maccamp/from-slims/
+# Investigating Seqs
 
-# try a few things?
+First we need to start an interactive session:
+
+`srun --partition=high --time=24:00:00 --mem=10G --nodes=1 --pty /bin/bash -il`
+
+## Unzip and Get 100k
+
+Try unzipping and `awk` the indexes out for the first 100k reads.
+
 ```
 gunzip -c skSOMM570_S1_L002_I1_001.fq.gz | head -n 400000 | awk 'NR%4==2' > somm570_i1.fq
 gunzip -c skSOMM570_S1_L002_I2_001.fq.gz | head -n 400000 | awk 'NR%4==2' > somm570_i2.fq
+```
 
-# see top indices:
+## Then look at top barcodes
+
+```
 paste somm570_i1.fq somm570_i2.fq | sort | uniq -c | sort -k 1 -n | tail
 ```
-# which returns this:
+Which returns this:
 
 ```
 1161 TCTTGTAT        AGATCTCG
@@ -26,6 +35,8 @@ paste somm570_i1.fq somm570_i2.fq | sort | uniq -c | sort -k 1 -n | tail
 ```
 
 # look at unique 8 barcodes
+
+```
 cat somm570_i1.fq | grep ^GG | perl -ne 'while(m/^GG(\w{8})TGCAGG/g){print $1."\n"}'| sort | uniq -c
 
 ```
@@ -60,3 +71,8 @@ Ran this after unzipping:
 snakemake -j 3 --use-conda --rerun-incomplete --latency-wait 15 --resources mem_mb=200000 --cluster "sbatch -t 1080 -J split -p high -n 1 -N 1" -k -n
 ```
 
+```
+
+snakemake -j 16 --use-conda --rerun-incomplete --unlock --latency-wait 15 --cluster "sbatch -t 5000 -J radseq -p high -n 1 -N 1 --mail-user=rapeek@ucdavis.edu -o slurms/align_%j.out" -k -n
+
+```
