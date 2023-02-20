@@ -46,3 +46,17 @@ gunzip -c r1.fastq.gz | head -n 400000 | grep ^GG | perl -ne 'while(m/^GG(\w{8})
 
 # Demultiplexing
 
+## Unzip Multiple files in parallel
+
+Important to do this in an interactive session. This unzips multiple files (8 in this case so 8 jobs in parallel).
+
+`parallel --jobs 8 gunzip {} ::: *.fq.gz`
+
+## Snakemake
+
+Ran this after unzipping:
+
+```
+snakemake -j 3 --use-conda --rerun-incomplete --latency-wait 15 --resources mem_mb=200000 --cluster "sbatch -t 1080 -J split -p high -n 1 -N 1" -k -n
+```
+
