@@ -6,9 +6,9 @@ LANES = m['seqsomm'].unique().tolist() # somm
 READS = ["1", "2"]
 TMPDIR = "/scratch/rapeek"
 
-print(PLATES)
-print(SAMPLES)
-print(LANES)
+#print(PLATES)
+#print(SAMPLES)
+#print(LANES)
 
 rule all:
     input: 
@@ -97,7 +97,7 @@ rule index_bams:
         mem_mb=2000,
         time=2880
     shell:"""
-        samtools index --threads {threads} {input}
+        samtools index {input}
 	"""
 
 rule bam_stats:
