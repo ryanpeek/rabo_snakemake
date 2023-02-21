@@ -72,3 +72,27 @@ snakemake -j 16 --use-conda --rerun-incomplete --unlock --latency-wait 15 --clus
 
 If we want to try a dry run, make sure to use `-n`. Sometimes we need to use the `--unlock` flag too if things break along the way and we need to restart.
 
+# Calc Depth
+
+To look at coverage we can generate coverage per locus with samtools
+
+```
+samtools depth mybam.sort.bam > reads.sort.coverage
+
+# then look at this to calculate the avg coverage (or depth) over the sequenced region:
+cat reads.sort.coverage | sort -g -k 3 | awk '{sum+=$3} END {if (NR > 0) print "AVG=",sum/NR,"\\n"}'
+
+# or in a single line calc average coverage for each sample or bam
+samtools depth bam.sort.fam | awk '{sum+=$3} END {if (NR > 0) print "AVG=", sum/NR}'
+
+```
+
+To combine all:
+
+```
+cat *depth > all_bams_depth.txt
+```
+
+
+
+
