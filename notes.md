@@ -14,7 +14,7 @@ gunzip -c skSOMM570_S1_L002_I1_001.fq.gz | head -n 400000 | awk 'NR%4==2' > somm
 gunzip -c skSOMM570_S1_L002_I2_001.fq.gz | head -n 400000 | awk 'NR%4==2' > somm570_i2.fq
 ```
 
-## Then look at top barcodes
+## Look at top barcodes
 
 ```
 paste somm570_i1.fq somm570_i2.fq | sort | uniq -c | sort -k 1 -n | tail
@@ -34,16 +34,15 @@ Which returns this:
 3185 CATTTCAT        AGATCTCG
 ```
 
-# look at unique 8 barcodes
+## Look at unique 8 barcodes
 
 ```
 cat somm570_i1.fq | grep ^GG | perl -ne 'while(m/^GG(\w{8})TGCAGG/g){print $1."\n"}'| sort | uniq -c
 
 ```
 
-# grep notes
+## `grep` checks for well barcodes
 
-### grep for well barcodes
 
 ```
 cat r1.fastq | grep ^GG | perl -ne 'while(m/^GG(\w{8})TGCAGG/g){print $1."\n"}'| sort | uniq -c
@@ -55,24 +54,21 @@ cat r1.fastq | grep ^GG | perl -ne 'while(m/^GG(\w{8})TGCAGG/g){print $1."\n"}'|
 gunzip -c r1.fastq.gz | head -n 400000 | grep ^GG | perl -ne 'while(m/^GG(\w{8})TGCAGG/g){print $1."\n"}'| sort | uniq -c | sort -k 1 -n | tail
 ```
 
-# Demultiplexing
-
-## Unzip Multiple files in parallel
+# Unzip files in parallel
 
 Important to do this in an interactive session. This unzips multiple files (8 in this case so 8 jobs in parallel).
 
-`parallel --jobs 8 gunzip {} ::: *.fq.gz`
-
-## Snakemake
-
-Ran this after unzipping:
-
 ```
-snakemake -j 3 --use-conda --rerun-incomplete --latency-wait 15 --resources mem_mb=200000 --cluster "sbatch -t 1080 -J split -p high -n 1 -N 1" -k -n
+parallel --jobs 8 gunzip {} ::: *.fq.gz
 ```
 
-```
+# Snakemake
 
+We can then use snakemake to do the well split, alignment and general analysis.
+
+```
 snakemake -j 16 --use-conda --rerun-incomplete --unlock --latency-wait 15 --cluster "sbatch -t 5000 -J radseq -p high -n 1 -N 1 --mail-user=rapeek@ucdavis.edu -o slurms/align_%j.out" -k -n
-
 ```
+
+If we want to try a dry run, make sure to use `-n`. Sometimes we need to use the `--unlock` flag too if things break along the way and we need to restart.
+
