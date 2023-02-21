@@ -14,35 +14,11 @@ rule all:
     input: 
         expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
 	expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
-	expand("outputs/bamlists/{lane}_all.bamlist", lane = LANES)
+	expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES)
 	#expand("outputs/pca/{lane}_pca_all.covMat", lane = LANES)
 
-# remove expand here so that it runs rule once instead twice (for each R1 and R2)
-#rule unzip:
-#    input: "../../ronca/raw/{lane}_CKDL200163818-1a_HCJKCCCX2_L7_{read}.fq.gz"
-#    output: "inputs/fastq/{lane}_R{read}.fastq"
-#    threads: 1
-#    resources:
-#        mem_mb=2000,
-#	 tmpdir=TMPDIR,
-#        time=2880
-    #benchmark: "benchmarks/unzip_fastq_{lane}_R{read}.tsv"
-#    shell:'''
-#    gunzip -c {input} > {output}
-#    '''
+# starting at well split because plate split was run w deMultiplexML tool by MM.
 
-#rule plate_split_fastq:
-#    input: "inputs/fastq/sk{lane}_S1_L002_R00{read}.fastq"
-#    output: "outputs/fastq_plate/{lane}_{plate}_R{read}.fastq"
-#    threads: 1
-#    resources:
-#        mem_mb=2000,
-#	#tmpdir=TMPDIR,
-#        time=2880
-#    benchmark: "benchmarks/plate_split_{lane}_{plate}_R{read}.tsv" 
-#    shell:"""
-#    grep --no-group-separator -A 3 ":{wildcards.plate}" {input} > {output}
-#    """
 rule well_split_fastq:
     input: expand("outputs/fastq_plate/{{lane}}_{{plate}}_R{read}.fastq", read = READS)
     output: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{sample}.fastq", sample = SAMPLES, read = READS)
@@ -101,20 +77,32 @@ rule index_bams:
 	"""
 
 rule bam_stats:
-    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam",
+    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
     output: "outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats"
     threads: 1
     conda: "envs/samtools_bwa.yml"
     shell:"""
         samtools stats --threads {threads} {input} | grep ^SN | cut -f 2-4 > {output}
 	"""
-rule make_bamlist:
-    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
-    output: "outputs/bamlists/{lane}_all.bamlist"
-    threads: 1
+
+rule bam_depth:
+    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
+    output: "outputs/stats/{lane}_{plate}_{sample}.depth"
+    params:
+        sampname="{lane}_{plate}_{sample}"
+    threads: 2
+    conda: "envs/samtools_bwa.yml"
     shell:"""
-        ls {input} > {output}
+    	samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print "{input}", sum/NR}}' > {output}
 	"""
+
+#rule make_bamlist:
+#    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
+#    output: "outputs/bamlists/{lane}_all.bamlist"
+#    threads: 1
+#   shell:"""
+#        ls {input} > {output}
+#	"""
 
 #rule make_pca:
 #    input: 
