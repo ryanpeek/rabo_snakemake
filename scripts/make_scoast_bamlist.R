@@ -48,26 +48,14 @@ dat_sc_all <- dat_sc %>% st_drop_geometry()
 # write all for PCA comparison
 bam_write(dat_sc_all, somms = "SOMM570", bamlist_name = "rabo_sc_all", extension = "sort.flt.bam")
 
-# write just historical or current
-df_raon_ns %>% 
-  group_by(site_type, site_id, samp_year) %>% 
-  tally()
-
-# write HISTORICAL
-df_raon_ns_hist <- df_raon_ns %>% 
-  filter(samp_year<2010)
-
-# write all for mult pop comparison
-bam_write(df_raon_ns_hist, somms = "SOMM", bamlist_name = "raon_northshore_hist")
-
-
 # PUT BAMLIST ON CLUSTER -----------------------------------------
 
-
 # go to local dir with bamlists
-# cd data_output/bamlists/
+# cd outputs/bamlists/
 # sftp farm
-# cd /group/millermrgrp3/ryan3/ronca/bamlists
+# cd /group/millermrgrp3/ryan3/sneks/rabo_snakemake/outputs/bamlists
+somms <- "SOMM570"
+bamlistName <- "rabo_sc_all"
 glue("put {somms}_{bamlistName}*") # (this goes from local to cluster)
 glue("put {bamlistName}*") # (this goes from local to cluster)
 
@@ -75,10 +63,8 @@ glue("put {bamlistName}*") # (this goes from local to cluster)
 
 # NEW PCA method...run from SEQS
 # farm
-paste0("cd /group/millermrgrp3/ryan3/ronca/")
-bamlist <- "ronca_only_nodups.bamlist"
 # glue("sbatch --mem=60G code/08_pcAngsd.sh {bamlist}")
-glue("sbatch 05_pca_ibs.sh {bamlist} /group/millermrgrp3/ryan3/ronca/bams")
+glue("sbatch 05_pca_ibs.sh {bamlistName} /group/millermrgrp3/ryan3/ronca/bams")
 
 # ANGSD ADMIX --------------------------------------------------------
 
