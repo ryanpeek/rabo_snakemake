@@ -121,6 +121,7 @@ rule make_bamlist:
         ls {input} > {output}
         """
 
+# may need to reindex the bait_lengths.txt (angsd sites index baits_lengths.txt)
 rule make_pca:
     input: 
         bamlist = "outputs/bamlists/rabo_sc_all.bamlist",
@@ -133,9 +134,10 @@ rule make_pca:
         minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
 	covMat = "outputs/pca/rabo_sc_all_pca"
     resources:
-        time=1080,
+        time=1440,
 	mem_mb=lambda wildcards, attempt: attempt *8000
     shell:"""
-        angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis {params.minInd} -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
+        angsd sites index {input.bait_length}
+	angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis 5 -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
         """
 
