@@ -14,8 +14,8 @@ rule all:
     input: 
         expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
 	expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
-	expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES)
-	#expand("outputs/pca/{lane}_pca_all.covMat", lane = LANES)
+	expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
+	"outputs/pca/rabo_sc_all_pca.covMat"
 
 # starting at well split because plate split was run w deMultiplexML tool by MM.
 
@@ -84,23 +84,23 @@ rule bam_stats:
     shell:"""
         samtools stats --threads {threads} {input} | grep ^SN | cut -f 2-4 > {output}
 	"""
-rule bam_alignment_stats:
-    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
-    output: "outputs/stats/{lane}_{plate}_{sample}.bamstats.txt"
-    threads: 4
-    conda: "envs/samtools_bwa.yml"
-    shell:"""
-        # total reads
-        samtools flagstat {input} | sed -n 1p | cut -d" " -f1 > {output}
-        # mapped reads
-	samtools flagstat {input} | sed -n 5p | cut -d" " -f1 | paste -d" " - {output}
-        # paired in sequencing
-        samtools flagstat ${c1} | sed -n 8p | cut -d" " -f1 >> count3_paired.txt
-        # proper pairs
-        samtools flagstat ${c1} | sed -n 9p | cut -d" " -f1 >> count4_ppaired.txt
-        # add header row
-	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
-        """
+#rule bam_alignment_stats:
+#    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
+#    output: "outputs/stats/{lane}_{plate}_{sample}.bamstats.txt"
+#    threads: 4
+#    conda: "envs/samtools_bwa.yml"
+#    shell:"""
+#        # total reads
+#        samtools flagstat {input} | sed -n 1p | cut -d" " -f1 > {output}
+#        # mapped reads
+#	samtools flagstat {input} | sed -n 5p | cut -d" " -f1 | paste -d" " - {output}
+#        # paired in sequencing
+#        samtools flagstat ${c1} | sed -n 8p | cut -d" " -f1 >> count3_paired.txt
+#        # proper pairs
+#        samtools flagstat ${c1} | sed -n 9p | cut -d" " -f1 >> count4_ppaired.txt
+#        # add header row
+#	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
+#        """
 
 rule bam_depth:
     input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
@@ -113,36 +113,29 @@ rule bam_depth:
     	samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print "{input}", sum/NR}}' > {output}
 	"""
 
-#rule make_bamlist:
-#    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
-#    output: "outputs/bamlists/{lane}_all.bamlist"
-#    threads: 1
-#   shell:"""
-#        ls {input} > {output}
-#	"""
+rule make_bamlist:
+    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
+    output: "outputs/bamlists/{lane}_all.bamlist"
+    threads: 1
+    shell:"""
+        ls {input} > {output}
+        """
 
-#rule make_pca:
-#    input: 
-#        bamlist = "outputs/bamlists/{lane}_all.bamlist",
-#        ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa", # put in config file
-#        bait_length = "bait_lengths.txt" # put in config file, add copy in github
-#    output: "outputs/pca/{lane}_pca_all.covMat"
-#    threads: 16
-    #conda: "envs/angsd.yml"
-#    params: 
-#        minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
-#	covMat = lambda wildcards: "outputs/pca/" + wildcards.lane + "_pca_all"
- #   resources:
- #       time=1080,
-#	mem_mb=lambda wildcards, attempt: attempt *8000
- #   shell:"""
- #       angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis {params.minInd} -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
- #       """
-
-# to add:
-# sfs
-# thetas
-# admixture
-# fst
-
+rule make_pca:
+    input: 
+        bamlist = "outputs/bamlists/rabo_sc_all.bamlist",
+        ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa", # put in config file
+        bait_length = "bait_lengths.txt" # put in config file, add copy in github
+    output: "outputs/pca/rabo_sc_all_pca.covMat"
+    threads: 16
+    conda: "envs/angsd.yml"
+    params: 
+        minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
+	covMat = "outputs/pca/rabo_sc_all_pca"
+    resources:
+        time=1080,
+	mem_mb=lambda wildcards, attempt: attempt *8000
+    shell:"""
+        angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis {params.minInd} -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
+        """
 
