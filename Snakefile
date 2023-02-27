@@ -84,6 +84,23 @@ rule bam_stats:
     shell:"""
         samtools stats --threads {threads} {input} | grep ^SN | cut -f 2-4 > {output}
 	"""
+rule bam_alignment_stats:
+    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
+    output: "outputs/stats/{lane}_{plate}_{sample}.bamstats.txt"
+    threads: 4
+    conda: "envs/samtools_bwa.yml"
+    shell:"""
+        # total reads
+        samtools flagstat {input} | sed -n 1p | cut -d" " -f1 > {output}
+        # mapped reads
+	samtools flagstat {input} | sed -n 5p | cut -d" " -f1 | paste -d" " - {output}
+        # paired in sequencing
+        samtools flagstat ${c1} | sed -n 8p | cut -d" " -f1 >> count3_paired.txt
+        # proper pairs
+        samtools flagstat ${c1} | sed -n 9p | cut -d" " -f1 >> count4_ppaired.txt
+        # add header row
+	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
+        """
 
 rule bam_depth:
     input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
