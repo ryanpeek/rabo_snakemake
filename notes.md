@@ -68,6 +68,9 @@ We can then use snakemake to do the well split, alignment and general analysis.
 
 ```
 snakemake -j 16 --use-conda --rerun-incomplete --unlock --latency-wait 15 --cluster "sbatch -t 5000 -J radseq -p high -n 1 -N 1 --mail-user=rapeek@ucdavis.edu -o slurms/align_%j.out" -k -n
+
+# no lock
+snakemake -j 16 --use-conda --rerun-incomplete --latency-wait 15 --cluster "sbatch -t 5000 -J radseq -p high -n 1 -N 1 --mail-user=rapeek@ucdavis.edu -o slurms/align_%j.out" -k -n
 ```
 
 If we want to try a dry run, make sure to use `-n`. Sometimes we need to use the `--unlock` flag too if things break along the way and we need to restart.
@@ -128,7 +131,7 @@ samtools flagstat ${c1} | sed -n 1p | IFS=':' cut -f2 | paste  -d" " - >> tst.tx
 samtools flagstat ${c1} | sed -n 1p | cut -d" " -f1 | paste  -d" " - >> tst.txt
 
 # mapped reads
-samtools flagstat ${c1} | sed -n 5p | IFS=':' cut -f2 | paste  -d" " - >> tst.txt
+samtools flagstat ${c1} | sed -n 7p | IFS=':' cut -f2 | paste  -d" " - >> tst.txt
 
 # paired in sequencing
 samtools flagstat ${c1} | sed -n 8p | IFS=':' cut -f2 | paste  -d" " - >> tst.txt
@@ -144,3 +147,22 @@ paste $list count1_aligns.txt count2_mapped.txt count3_paired.txt count4_ppaired
 sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
 
 ```
+
+# pulling from local files:
+
+```
+
+# total reads
+less outputs/stats/SOMM570_AGAGTC_GGAAACATCGTGCAGG.sort.flt.bam.stats | sed -n 1p | IFS=':' cut -f2 > tst.txt
+
+# mapped reads
+less outputs/stats/SOMM570_AGAGTC_GGAAACATCGTGCAGG.sort.flt.bam.stats | sed -n 7p | IFS=':' cut -f2 | paste -d" " - >> tst.txt  
+
+# prop pairs
+less outputs/stats/SOMM570_AGAGTC_GGAAACATCGTGCAGG.sort.flt.bam.stats | sed -n 10p | IFS=':' cut -f2 | paste -d" " - >> tst.txt  
+
+# percent prop paired
+less outputs/stats/SOMM570_AGAGTC_GGAAACATCGTGCAGG.sort.flt.bam.stats | sed -n 38p | IFS=':' cut -f2 | paste -d" " - >> tst.txt  
+
+```
+
