@@ -12,11 +12,11 @@ TMPDIR = "/scratch/rapeek"
 
 rule all:
     input: 
-        "outputs/multiqc/multiqc_report.html",
-	expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
-	expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
-	expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
-	"outputs/pca/rabo_sc_all_pca.covMat"
+        #"outputs/multiqc/multiqc_report.html",
+        expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
+        expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
+        expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
+        "outputs/pca/rabo_sc_all_pca.covMat"
 
 # starting at well split because plate split was run w deMultiplexML tool by MM.
 
@@ -70,8 +70,8 @@ rule align_fastq:
         time=2880
     #benchmark: "benchmarks/align_fastq_{lane}_{plate}_{sample}.tsv"
     shell:"""
-	bwa mem -t {threads} {input.ref} {input.fq} | samtools view --threads {threads} -Sb - | samtools sort --threads {threads} - -o {output}
-	"""
+        bwa mem -t {threads} {input.ref} {input.fq} | samtools view --threads {threads} -Sb - | samtools sort --threads {threads} - -o {output}
+    """
 
 rule filter_bams:
     input: "outputs/bams/{lane}_{plate}_{sample}.sort.bam"
@@ -85,7 +85,7 @@ rule filter_bams:
     #benchmark: "benchmarks/filter_bams_{lane}_{plate}_{sample}.tsv"
     shell:"""
         samtools view --threads {threads} -f 0x2 -b {input} | samtools rmdup - {output}
-        """
+    """
 
 rule index_bams:
     input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
@@ -97,7 +97,7 @@ rule index_bams:
         time=2880
     shell:"""
         samtools index {input}
-	"""
+    """
 
 rule bam_stats:
     input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
@@ -106,7 +106,7 @@ rule bam_stats:
     conda: "envs/samtools_bwa.yml"
     shell:"""
         samtools stats --threads {threads} {input} | grep ^SN | cut -f 2-4 > {output}
-	"""
+    """
 #rule bam_alignment_stats:
 #    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
 #    output: "outputs/stats/{lane}_{plate}_{sample}.bamstats.txt"
@@ -133,8 +133,8 @@ rule bam_depth:
     threads: 2
     conda: "envs/samtools_bwa.yml"
     shell:"""
-    	samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print "{input}", sum/NR}}' > {output}
-	"""
+        samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print "{input}", sum/NR}}' > {output}
+    """
 
 rule make_bamlist:
     input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
@@ -142,7 +142,7 @@ rule make_bamlist:
     threads: 1
     shell:"""
         ls {input} > {output}
-        """
+    """
 
 # may need to reindex the bait_lengths.txt (angsd sites index baits_lengths.txt)
 rule make_pca:
@@ -161,6 +161,6 @@ rule make_pca:
 	mem_mb=lambda wildcards, attempt: attempt *8000
     shell:"""
         angsd sites index {input.bait_length}
-	angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis 5 -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
-        """
+        angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis 5 -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
+    """
 
