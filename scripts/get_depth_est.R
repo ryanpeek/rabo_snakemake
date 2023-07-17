@@ -8,7 +8,6 @@ library(tidyverse)
 library(ggthemes)
 library(fs)
 
-
 # Get Data ----------------------------------------------------------------
 
 # either scp/sftp in and get file, or pull direct from github if file size is low
