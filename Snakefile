@@ -12,8 +12,7 @@ TMPDIR = "/scratch/rapeek"
 
 rule all:
     input: 
-        #"outputs/multiqc/multiqc_report.html",
-        expand("outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", lane = LANES, plate = PLATES, read = READS, sample = SAMPLES),
+        "outputs/multiqc/multiqc_report.html",
         expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
@@ -37,25 +36,37 @@ rule well_split_fastq:
 
 # fastqc and multiqc
 
-rule fastqc: 
-    input: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{{sample}}.fastq", read = READS)
-    output: "outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", read = READS)
-    conda: "envs/qc.yml"
-    threads: 4
-    shell:"""
-        fastqc -o {output} -t {threads} {input}
-    """
+rule fastqc:
+    input:
+        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
+        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
+    output:
+        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
+        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
+    conda: 'envs/qc.yml'
+    threads: 1
+    resources:
+        mem_mb=4000
+    shell:'''
+    fastqc -o outputs/fastqc {input}
+    '''
 
-#rule multiqc: 
-#    input:
-#        expand("outputs/fastqc/{{lane}}_{{plate}}_R{read}_{{sample}}.fastqc.html", read = READS)
-#    output:
-#        "outputs/multiqc/multiqc_report.html"
-#    conda:
-#        "envs/qc.yml"
+#rule fastqc: 
+#    input: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{{sample}}.fastq", read = READS)
+#    output: "outputs/fastqc/{lane}_{plate}_{sample}_{read}.fastqc.html"
+#    conda: "envs/qc.yml"
+#    threads: 4
 #    shell:"""
-#        multiqc outputs/fastqc -o outputs/multiqc
-#     """
+#        fastqc -o {output} -t {threads} {input}
+#    """
+
+rule multiqc: 
+    input: expand("outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", lane=LANES, plate=PLATES, read=READS, sample=SAMPLES) 
+    output: "outputs/multiqc/multiqc_report.html"
+    conda: "envs/qc.yml"
+    shell:"""
+        multiqc outputs/fastqc -o outputs/multiqc
+    """
 
 # rule to align and combine
 rule align_fastq:
