@@ -43,7 +43,7 @@ rule fastqc:
     threads: 4
     shell:"""
         fastqc -o {output} -t {threads} {input}
-        """
+    """
 
 rule multiqc: 
     input:
@@ -54,7 +54,7 @@ rule multiqc:
         "envs/qc.yml"
     shell:"""
         multiqc outputs/fastqc -o outputs/multiqc
-        """
+     """
 
 # rule to align and combine
 rule align_fastq:
