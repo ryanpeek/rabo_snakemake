@@ -13,6 +13,7 @@ TMPDIR = "/scratch/rapeek"
 rule all:
     input: 
         #"outputs/multiqc/multiqc_report.html",
+        expand("outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", lane = LANES, plate = PLATES, read = READS, sample = SAMPLES),
         expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
@@ -45,16 +46,16 @@ rule fastqc:
         fastqc -o {output} -t {threads} {input}
     """
 
-rule multiqc: 
-    input:
-        expand("outputs/fastqc/{{lane}}_{{plate}}_R{read}_{{sample}}.fastqc.html", read = READS)
-    output:
-        "outputs/multiqc/multiqc_report.html"
-    conda:
-        "envs/qc.yml"
-    shell:"""
-        multiqc outputs/fastqc -o outputs/multiqc
-     """
+#rule multiqc: 
+#    input:
+#        expand("outputs/fastqc/{{lane}}_{{plate}}_R{read}_{{sample}}.fastqc.html", read = READS)
+#    output:
+#        "outputs/multiqc/multiqc_report.html"
+#    conda:
+#        "envs/qc.yml"
+#    shell:"""
+#        multiqc outputs/fastqc -o outputs/multiqc
+#     """
 
 # rule to align and combine
 rule align_fastq:
