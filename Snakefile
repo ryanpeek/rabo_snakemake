@@ -16,7 +16,7 @@ rule all:
         expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
-        "outputs/pca/rabo_sc_all_pca.covMat"
+        #"outputs/pca/rabo_sc_all_pca.covMat"
 
 # starting at well split because plate split was run w deMultiplexML tool by MM.
 
@@ -36,29 +36,31 @@ rule well_split_fastq:
 
 # fastqc and multiqc
 
-rule fastqc:
-    input:
-        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
-        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
-    output:
-        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
-        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
-    conda: 'envs/qc.yml'
-    threads: 1
-    resources:
-        mem_mb=4000
-    shell:'''
-    fastqc -o outputs/fastqc {input}
-    '''
+#rule fastqc:
+#    input:
+#        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
+#        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
+#    output:
+#        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
+#        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
+#    conda: 'envs/qc.yml'
+#    threads: 1
+#    resources:
+#        mem_mb=4000
+#    shell:'''
+#    fastqc -o outputs/fastqc {input}
+#    '''
 
-#rule fastqc: 
-#    input: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{{sample}}.fastq", read = READS)
-#    output: "outputs/fastqc/{lane}_{plate}_{sample}_{read}.fastqc.html"
-#    conda: "envs/qc.yml"
-#    threads: 4
-#    shell:"""
-#        fastqc -o {output} -t {threads} {input}
-#    """
+rule fastqc: 
+    input: "outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq"
+    output: "outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html"
+    conda: "envs/qc.yml"
+    threads: 1
+    resources: 
+        mem_mb=4000
+    shell:"""
+        fastqc -o outputs/fastqc -t {threads} {input}
+    """
 
 rule multiqc: 
     input: expand("outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", lane=LANES, plate=PLATES, read=READS, sample=SAMPLES) 
@@ -148,31 +150,31 @@ rule bam_depth:
         samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print "{input}", sum/NR}}' > {output}
     """
 
-rule make_bamlist:
-    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
-    output: "outputs/bamlists/{lane}_all.bamlist"
-    threads: 1
-    shell:"""
-        ls {input} > {output}
-    """
+#rule make_bamlist:
+#    input: expand("outputs/bams/{{lane}}_{plate}_{sample}.sort.flt.bam", plate = PLATES, sample = SAMPLES)
+#    output: "outputs/bamlists/{lane}_all.bamlist"
+#    threads: 1
+#    shell:"""
+#        ls {input} > {output}
+#    """
 
 # may need to reindex the bait_lengths.txt (angsd sites index baits_lengths.txt)
-rule make_pca:
-    input: 
-        bamlist = "outputs/bamlists/rabo_sc_all.bamlist",
-        ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa", # put in config file
-        bait_length = "bait_lengths.txt" # put in config file, add copy in github
-    output: "outputs/pca/rabo_sc_all_pca.covMat"
-    threads: 16
-    conda: "envs/angsd.yml"
-    params: 
-        minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
-	covMat = "outputs/pca/rabo_sc_all_pca"
-    resources:
-        time=1440,
-	mem_mb=lambda wildcards, attempt: attempt *8000
-    shell:"""
-        angsd sites index {input.bait_length}
-        angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis 5 -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
-    """
+#rule make_pca:
+#    input: 
+#        bamlist = "outputs/bamlists/rabo_sc_all_run1.bamlist",
+#        ref = "/home/rapeek/projects/SEQS/final_contigs_300.fa", # put in config file
+#        bait_length = "bait_lengths.txt" # put in config file, add copy in github
+#    output: "outputs/pca/rabo_sc_all_run1_pca.covMat"
+#    threads: 16
+#    conda: "envs/angsd.yml"
+#    params: 
+#        minInd = lambda wildcards, input: round(len(open(input.bamlist).readlines( ))/5),
+#	covMat = "outputs/pca/rabo_sc_all_run1_pca"
+#    resources:
+#        time=1440,
+#	mem_mb=lambda wildcards, attempt: attempt *8000
+#    shell:"""
+#        angsd sites index {input.bait_length}
+#        angsd -bam {input.bamlist} -out {params.covMat} -doIBS 1 -doCounts 1 -doMajorMinor 1 -minFreq 0.05 -maxMis 5 -minMapQ 30 -minQ 20 -SNP_pval 1e-6 -makeMatrix 1 -doCov 1 -GL 1 -doMaf 1 -nThreads {threads} -ref {input.ref} -sites {input.bait_length}
+#    """
 
