@@ -12,7 +12,9 @@ TMPDIR = "/scratch/rapeek"
 
 rule all:
     input: 
-        "outputs/multiqc/multiqc_report.html",
+        expand("outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html", lane = LANES, plate = PLATES, sample = SAMPLES),
+	expand("outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html", lane = LANES, plate = PLATES, sample = SAMPLES),
+	#"outputs/multiqc/multiqc_report.html",
         #expand("outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq", lane = LANES, plate = PLATES, read = READS, sample = SAMPLES)
 	expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
@@ -26,7 +28,7 @@ rule well_split_fastq:
     output: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{sample}.fastq", sample = SAMPLES, read = READS)
     threads: 4
     resources:
-        mem_mb=4000
+        mem_mb=4000,
 	tmpdir=TMPDIR,
         time=2880
     #benchmark: "benchmarks/well_split_fastq_{lane}_{plate}_R{read}_{sample}.tsv"
