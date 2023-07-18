@@ -1,7 +1,17 @@
 # rabo_snakemake
 
-Snakemake workflow for RAD novaseq data
+Snakemake workflow for RABO radseq data
 
+## Install Conda first
+
+```
+# session
+srun --partition=high --time=24:00:00 --mem=10G --nodes=1 --pty /bin/bash -il
+
+echo source ~/.bashrc >> ~/.bash_profile
+curl -LO https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+bash Mambaforge-Linux-x86_64.sh 
+```
 
 ## Getting started
 
@@ -16,7 +26,7 @@ conda activate radseq
 srun -p high -J split -t 12:00:00 --mem=10G --pty bash
 
 ### run a test (dry run)
-snakemake -n
+snakemake -j 1 --use-conda --rerun-incomplete --latency-wait 15 --resources mem_mb=200000 --cluster "sbatch -t 1080 -J fastqc -p high -n 1 -N 1" -k -n
 
 ### try this to submit 3 jobs at once, and rerun incompletes
 snakemake -j 3 --use-conda --rerun-incomplete --latency-wait 15 --resources mem_mb=200000 --cluster "sbatch -t 10080 -J radseq -p high -n 1 -N 1" -k
