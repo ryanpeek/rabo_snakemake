@@ -13,7 +13,8 @@ TMPDIR = "/scratch/rapeek"
 rule all:
     input: 
         "outputs/multiqc/multiqc_report.html",
-        expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
+        #expand("outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq", lane = LANES, plate = PLATES, read = READS, sample = SAMPLES)
+	expand("outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats", lane = LANES, plate = PLATES, sample = SAMPLES),
         expand("outputs/stats/{lane}_{plate}_{sample}.depth", lane = LANES, plate = PLATES, sample = SAMPLES),
         #"outputs/pca/rabo_sc_all_pca.covMat"
@@ -23,10 +24,10 @@ rule all:
 rule well_split_fastq:
     input: expand("outputs/fastq_plate/{{lane}}_{{plate}}_R{read}.fastq", read = READS)
     output: expand("outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{sample}.fastq", sample = SAMPLES, read = READS)
-    threads: 1
+    threads: 4
     resources:
-        mem_mb=2000,
-	#tmpdir=TMPDIR,
+        mem_mb=4000
+	tmpdir=TMPDIR,
         time=2880
     #benchmark: "benchmarks/well_split_fastq_{lane}_{plate}_R{read}_{sample}.tsv"
     params: outdir = "outputs/fastq_split/"
@@ -36,39 +37,31 @@ rule well_split_fastq:
 
 # fastqc and multiqc
 
-#rule fastqc:
-#    input:
-#        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
-#        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
-#    output:
-#        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
-#        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
-#    conda: 'envs/qc.yml'
-#    threads: 1
-#    resources:
-#        mem_mb=4000
-#    shell:'''
-#    fastqc -o outputs/fastqc {input}
-#    '''
-
-rule fastqc: 
-    input: "outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq"
-    output: "outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html"
-    conda: "envs/qc.yml"
+rule fastqc:
+    input:
+        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
+        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
+    output:
+        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
+        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
+    conda: 'envs/qc.yml'
     threads: 1
-    resources: 
+    resources:
         mem_mb=4000
-    shell:"""
-        fastqc -o outputs/fastqc -t {threads} {input}
-    """
+    shell:'''
+    fastqc -o outputs/fastqc -t {threads} {input}
+    '''
 
-rule multiqc: 
-    input: expand("outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", lane=LANES, plate=PLATES, read=READS, sample=SAMPLES) 
-    output: "outputs/multiqc/multiqc_report.html"
-    conda: "envs/qc.yml"
-    shell:"""
-        multiqc outputs/fastqc -o outputs/multiqc
-    """
+#rule multiqc: 
+#    input: expand("outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html", lane=LANES, plate=PLATES, read=READS, sample=SAMPLES) 
+#    output: "outputs/multiqc/multiqc_report.html"
+#    conda: "envs/qc.yml"
+#    resources:
+#       mem_mb=4000,
+#	time=2880
+#    shell:"""
+#        multiqc outputs/fastqc -o outputs/multiqc
+#    """
 
 # rule to align and combine
 rule align_fastq:
@@ -80,7 +73,7 @@ rule align_fastq:
     threads: 4
     resources:
         mem_mb=4000,
-	#tmpdir=TMPDIR,
+	tmpdir=TMPDIR,
         time=2880
     #benchmark: "benchmarks/align_fastq_{lane}_{plate}_{sample}.tsv"
     shell:"""
@@ -94,7 +87,7 @@ rule filter_bams:
     threads: 4
     resources:
         mem_mb=4000,
-	#tmpdir=TMPDIR,
+	tmpdir=TMPDIR,
         time=2880
     #benchmark: "benchmarks/filter_bams_{lane}_{plate}_{sample}.tsv"
     shell:"""
@@ -121,23 +114,24 @@ rule bam_stats:
     shell:"""
         samtools stats --threads {threads} {input} | grep ^SN | cut -f 2-4 > {output}
     """
-#rule bam_alignment_stats:
-#    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
-#    output: "outputs/stats/{lane}_{plate}_{sample}.bamstats.txt"
-#    threads: 4
-#    conda: "envs/samtools_bwa.yml"
-#    shell:"""
-#        # total reads
-#        samtools flagstat {input} | sed -n 1p | cut -d" " -f1 > {output}
-#        # mapped reads
-#	samtools flagstat {input} | sed -n 5p | cut -d" " -f1 | paste -d" " - {output}
-#        # paired in sequencing
-#        samtools flagstat ${c1} | sed -n 8p | cut -d" " -f1 >> count3_paired.txt
-#        # proper pairs
-#        samtools flagstat ${c1} | sed -n 9p | cut -d" " -f1 >> count4_ppaired.txt
-#        # add header row
-#	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
-#        """
+
+rule bam_alignment_stats:
+    input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
+    output: "outputs/stats/{lane}_{plate}_{sample}.bamstats.txt"
+    threads: 4
+    conda: "envs/samtools_bwa.yml"
+    shell:"""
+        # total reads
+        samtools flagstat {input} | sed -n 1p | cut -d" " -f1 > {output}
+        # mapped reads
+	samtools flagstat {input} | sed -n 5p | cut -d" " -f1 | paste -d" " - {output}
+        # paired in sequencing
+        samtools flagstat ${c1} | sed -n 8p | cut -d" " -f1 >> count3_paired.txt
+        # proper pairs
+        samtools flagstat ${c1} | sed -n 9p | cut -d" " -f1 >> count4_ppaired.txt
+        # add header row
+	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
+        """
 
 rule bam_depth:
     input: "outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam"
