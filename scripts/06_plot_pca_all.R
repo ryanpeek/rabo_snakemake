@@ -80,7 +80,7 @@ annot <- annot[-toDROP,]
 # Mapview Map -------------------------------------------------------------
 
 annot_sf <- annot %>% st_as_sf(coords=c("x","y"), crs=4326, remove=F)
-# mapview(annot_sf, zcol="river")
+mapview(annot_sf, zcol="river")
 
 # Basic PCA ---------------------------------------------------------------
 # simple test
@@ -148,6 +148,9 @@ PC_filt <- PC
    scale_shape("Sample Type") + 
    #scale_shape("Species") + 
    ggtitle(paste0(title)))
+
+# plotly
+plotly::ggplotly(gg12a)
 
 ## subsamp
 #ggsave(filename = glue("figs/{fileName}_{subsam}_pca_{pc1}_{pc2}.jpg"), width = 11, height = 8, units = "in", dpi=300)
