@@ -16,8 +16,8 @@ rule all:
         expand('outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
 	expand('outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
 	'outputs/multiqc/multiqc_report.html',
-        #expand('outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai', lane = LANES, plate = PLATES, sample = SAMPLES),
-        #expand('outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats', lane = LANES, plate = PLATES, sample = SAMPLES),
+        expand('outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai', lane = LANES, plate = PLATES, sample = SAMPLES),
+        expand('outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats', lane = LANES, plate = PLATES, sample = SAMPLES),
         expand('outputs/stats/{lane}_{plate}_{sample}.depth', lane = LANES, plate = PLATES, sample = SAMPLES)
         #'outputs/pca/rabo_sc_all_pca.covMat'
 
@@ -29,15 +29,16 @@ rule well_split_fastq:
     threads: 4
     resources:
         mem_mb=4000,
-#	      tmpdir=TMPDIR,
+	tmpdir=TMPDIR,
         time=2880
     #benchmark: 'benchmarks/well_split_fastq_{lane}_{plate}_R{read}_{sample}.tsv'
     params: outdir = 'outputs/fastq_split/'
     shell:'''
-    /group/millermrgrp3/ryan3/sneks/rabo_snakemake/scripts/BarcodeSplit_RAD_PE.2019.pl {input} GGACAAGCTATGCAGG,GGAAACATCGTGCAGG,GGACATTGGCTGCAGG,GGACCACTGTTGCAGG,GGAACGTGATTGCAGG,GGCGCTGATCTGCAGG,GGCAGATCTGTGCAGG,GGATGCCTAATGCAGG,GGAACGAACGTGCAGG,GGAGTACAAGTGCAGG,GGCATCAAGTTGCAGG,GGAGTGGTCATGCAGG,GGAACAACCATGCAGG,GGAACCGAGATGCAGG,GGAACGCTTATGCAGG,GGAAGACGGATGCAGG,GGAAGGTACATGCAGG,GGACACAGAATGCAGG,GGACAGCAGATGCAGG,GGACCTCCAATGCAGG,GGACGCTCGATGCAGG,GGACGTATCATGCAGG,GGACTATGCATGCAGG,GGAGAGTCAATGCAGG,GGAGATCGCATGCAGG,GGAGCAGGAATGCAGG,GGAGTCACTATGCAGG,GGATCCTGTATGCAGG,GGATTGAGGATGCAGG,GGCAACCACATGCAGG,GGCAAGACTATGCAGG,GGCAATGGAATGCAGG,GGCACTTCGATGCAGG,GGCAGCGTTATGCAGG,GGCATACCAATGCAGG,GGCCAGTTCATGCAGG,GGCCGAAGTATGCAGG,GGCCGTGAGATGCAGG,GGCCTCCTGATGCAGG,GGCGAACTTATGCAGG,GGCGACTGGATGCAGG,GGCGCATACATGCAGG,GGCTCAATGATGCAGG,GGCTGAGCCATGCAGG,GGCTGGCATATGCAGG,GGGAATCTGATGCAGG,GGGACTAGTATGCAGG,GGGAGCTGAATGCAGG,GGGATAGACATGCAGG,GGGCCACATATGCAGG,GGGCGAGTAATGCAGG,GGGCTAACGATGCAGG,GGGCTCGGTATGCAGG,GGGGAGAACATGCAGG,GGGGTGCGAATGCAGG,GGGTACGCAATGCAGG,GGGTCGTAGATGCAGG,GGGTCTGTCATGCAGG,GGGTGTTCTATGCAGG,GGTAGGATGATGCAGG,GGTATCAGCATGCAGG,GGTCCGTCTATGCAGG,GGTCTTCACATGCAGG,GGTGAAGAGATGCAGG,GGTGGAACAATGCAGG,GGTGGCTTCATGCAGG,GGTGGTGGTATGCAGG,GGTTCACGCATGCAGG,GGACACGAGATGCAGG,GGAAGAGATCTGCAGG,GGAAGGACACTGCAGG,GGAATCCGTCTGCAGG,GGAATGTTGCTGCAGG,GGACACTGACTGCAGG,GGACAGATTCTGCAGG,GGAGATGTACTGCAGG,GGAGCACCTCTGCAGG,GGAGCCATGCTGCAGG,GGAGGCTAACTGCAGG,GGATAGCGACTGCAGG,GGACGACAAGTGCAGG,GGATTGGCTCTGCAGG,GGCAAGGAGCTGCAGG,GGCACCTTACTGCAGG,GGCCATCCTCTGCAGG,GGCCGACAACTGCAGG,GGAGTCAAGCTGCAGG,GGCCTCTATCTGCAGG,GGCGACACACTGCAGG,GGCGGATTGCTGCAGG,GGCTAAGGTCTGCAGG,GGGAACAGGCTGCAGG,GGGACAGTGCTGCAGG,GGGAGTTAGCTGCAGG,GGGATGAATCTGCAGG,GGGCCAAGACTGCAGG {params.outdir}{wildcards.lane}_{wildcards.plate}
+        /group/millermrgrp3/ryan3/sneks/rabo_snakemake/scripts/BarcodeSplit_RAD_PE.2019.pl {input} GGACAAGCTATGCAGG,GGAAACATCGTGCAGG,GGACATTGGCTGCAGG,GGACCACTGTTGCAGG,GGAACGTGATTGCAGG,GGCGCTGATCTGCAGG,GGCAGATCTGTGCAGG,GGATGCCTAATGCAGG,GGAACGAACGTGCAGG,GGAGTACAAGTGCAGG,GGCATCAAGTTGCAGG,GGAGTGGTCATGCAGG,GGAACAACCATGCAGG,GGAACCGAGATGCAGG,GGAACGCTTATGCAGG,GGAAGACGGATGCAGG,GGAAGGTACATGCAGG,GGACACAGAATGCAGG,GGACAGCAGATGCAGG,GGACCTCCAATGCAGG,GGACGCTCGATGCAGG,GGACGTATCATGCAGG,GGACTATGCATGCAGG,GGAGAGTCAATGCAGG,GGAGATCGCATGCAGG,GGAGCAGGAATGCAGG,GGAGTCACTATGCAGG,GGATCCTGTATGCAGG,GGATTGAGGATGCAGG,GGCAACCACATGCAGG,GGCAAGACTATGCAGG,GGCAATGGAATGCAGG,GGCACTTCGATGCAGG,GGCAGCGTTATGCAGG,GGCATACCAATGCAGG,GGCCAGTTCATGCAGG,GGCCGAAGTATGCAGG,GGCCGTGAGATGCAGG,GGCCTCCTGATGCAGG,GGCGAACTTATGCAGG,GGCGACTGGATGCAGG,GGCGCATACATGCAGG,GGCTCAATGATGCAGG,GGCTGAGCCATGCAGG,GGCTGGCATATGCAGG,GGGAATCTGATGCAGG,GGGACTAGTATGCAGG,GGGAGCTGAATGCAGG,GGGATAGACATGCAGG,GGGCCACATATGCAGG,GGGCGAGTAATGCAGG,GGGCTAACGATGCAGG,GGGCTCGGTATGCAGG,GGGGAGAACATGCAGG,GGGGTGCGAATGCAGG,GGGTACGCAATGCAGG,GGGTCGTAGATGCAGG,GGGTCTGTCATGCAGG,GGGTGTTCTATGCAGG,GGTAGGATGATGCAGG,GGTATCAGCATGCAGG,GGTCCGTCTATGCAGG,GGTCTTCACATGCAGG,GGTGAAGAGATGCAGG,GGTGGAACAATGCAGG,GGTGGCTTCATGCAGG,GGTGGTGGTATGCAGG,GGTTCACGCATGCAGG,GGACACGAGATGCAGG,GGAAGAGATCTGCAGG,GGAAGGACACTGCAGG,GGAATCCGTCTGCAGG,GGAATGTTGCTGCAGG,GGACACTGACTGCAGG,GGACAGATTCTGCAGG,GGAGATGTACTGCAGG,GGAGCACCTCTGCAGG,GGAGCCATGCTGCAGG,GGAGGCTAACTGCAGG,GGATAGCGACTGCAGG,GGACGACAAGTGCAGG,GGATTGGCTCTGCAGG,GGCAAGGAGCTGCAGG,GGCACCTTACTGCAGG,GGCCATCCTCTGCAGG,GGCCGACAACTGCAGG,GGAGTCAAGCTGCAGG,GGCCTCTATCTGCAGG,GGCGACACACTGCAGG,GGCGGATTGCTGCAGG,GGCTAAGGTCTGCAGG,GGGAACAGGCTGCAGG,GGGACAGTGCTGCAGG,GGGAGTTAGCTGCAGG,GGGATGAATCTGCAGG,GGGCCAAGACTGCAGG {params.outdir}{wildcards.lane}_{wildcards.plate}
     '''
 
 # fastqc (this one worked?)
+
 rule fastqc:
     input:
         r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
@@ -45,49 +46,26 @@ rule fastqc:
     output:
         r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
         r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
-    #conda: 'envs/qc.yml'
+    conda: 'envs/qc.yml'
     resources:
         mem_mb=4000
-    wrapper: '0.31.1/bio/fastqc'
-    #shell:'''
-    #fastqc -o outputs/fastqc {input}
-    #'''
+    shell:'''
+        fastqc -o outputs/fastqc {input}
+    '''
 
-# fastqc (wrapper)
-#rule fastqc:
-#    input: expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-#    output:
-#        html = expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES),
-#        zip = expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.zip', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-#    #conda: 'envs/qc.yml'
-#    wrapper: '0.31.1/bio/fastqc'
-
-# multiqc with no wrapper
-#rule multiqc:
-#    input: expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-#    output: directory('outputs/multiqc')
-#    shell:'''
-#    multiqc {input}  -o {output}
-#    '''
-
-#rule multiqc no wrapper
-#    input: expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES) 
-#    output: directory('outputs/multiqc')
-#    conda: 'envs/qc.yml'
-#    resources:
-#        mem_mb=4000,
-#        time=2880
-#    shell:'''
-#        multiqc outputs/fastqc -o {output}
-#    '''
-
-# multiqc with wrapper
 rule multiqc:
-  input: expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-  output: 'outputs/multiqc/multiqc_report.html'
-  wrapper: '0.31.1/bio/multiqc'
+    input:
+        expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane = LANES, plate = PLATES, read = READS, sample = SAMPLES)
+    output:
+        "outputs/multiqc/multiqc_report.html",
+        directory("outputs/multiqc")
+    conda: 'envs/qc.yml'
+    shell:'''
+        multiqc {input} -o {output}
+    '''
 
 # rule to align and combine
+
 rule align_fastq:
     input: 
         fq = expand('outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{{sample}}.fastq', read = READS),
