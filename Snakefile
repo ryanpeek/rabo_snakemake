@@ -14,8 +14,8 @@ rule all:
     input: 
         #expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq', lane = LANES, plate = PLATES, read = READS, sample = SAMPLES)m
         expand('outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
-	      expand('outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
-	      'outputs/multiqc/multiqc_report.html',
+	expand('outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
+	'outputs/multiqc/multiqc_report.html',
         expand('outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai', lane = LANES, plate = PLATES, sample = SAMPLES),
         expand('outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats', lane = LANES, plate = PLATES, sample = SAMPLES),
         expand('outputs/stats/{lane}_{plate}_{sample}.depth', lane = LANES, plate = PLATES, sample = SAMPLES),
@@ -84,7 +84,7 @@ rule fastqc:
 # multiqc with wrapper
 rule multiqc:
   input: expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-  output: 'multiqc_report.html'
+  output: 'outputs/multiqc/multiqc_report.html'
   wrapper: '0.31.1/bio/multiqc'
 
 # rule to align and combine
