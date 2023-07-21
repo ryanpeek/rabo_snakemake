@@ -12,13 +12,13 @@ TMPDIR = '/scratch/rapeek'
 
 rule all:
     input: 
-        #expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq', lane = LANES, plate = PLATES, read = READS, sample = SAMPLES)m
+        expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq', lane = LANES, plate = PLATES, read = READS, sample = SAMPLES),
         expand('outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
 	expand('outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html', lane = LANES, plate = PLATES, sample = SAMPLES),
 	'outputs/multiqc/multiqc_report.html',
-        expand('outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai', lane = LANES, plate = PLATES, sample = SAMPLES),
-        expand('outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats', lane = LANES, plate = PLATES, sample = SAMPLES),
-        expand('outputs/stats/{lane}_{plate}_{sample}.depth', lane = LANES, plate = PLATES, sample = SAMPLES),
+        #expand('outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam.bai', lane = LANES, plate = PLATES, sample = SAMPLES),
+        #expand('outputs/stats/{lane}_{plate}_{sample}.sort.flt.bam.stats', lane = LANES, plate = PLATES, sample = SAMPLES),
+        expand('outputs/stats/{lane}_{plate}_{sample}.depth', lane = LANES, plate = PLATES, sample = SAMPLES)
         #'outputs/pca/rabo_sc_all_pca.covMat'
 
 # starting at well split because plate split was run w deMultiplexML tool by MM.
@@ -29,7 +29,7 @@ rule well_split_fastq:
     threads: 4
     resources:
         mem_mb=4000,
-	      tmpdir=TMPDIR,
+#	      tmpdir=TMPDIR,
         time=2880
     #benchmark: 'benchmarks/well_split_fastq_{lane}_{plate}_R{read}_{sample}.tsv'
     params: outdir = 'outputs/fastq_split/'
@@ -38,29 +38,29 @@ rule well_split_fastq:
     '''
 
 # fastqc (this one worked?)
-#rule fastqc:
-#    input:
-#        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
-#        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
-#    output:
-#        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
-#        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
-#    conda: 'envs/qc.yml'
-#    threads: 1
-#    resources:
-#        mem_mb=4000
-#    shell:'''
-#    fastqc -o outputs/fastqc -t {threads} {input}
-#    '''
+rule fastqc:
+    input:
+        r1 = 'outputs/fastq_split/{lane}_{plate}_R1_{sample}.fastq',
+        r2 = 'outputs/fastq_split/{lane}_{plate}_R2_{sample}.fastq'
+    output:
+        r1 = 'outputs/fastqc/{lane}_{plate}_R1_{sample}.fastqc.html',
+        r2 = 'outputs/fastqc/{lane}_{plate}_R2_{sample}.fastqc.html'
+    #conda: 'envs/qc.yml'
+    resources:
+        mem_mb=4000
+    wrapper: '0.31.1/bio/fastqc'
+    #shell:'''
+    #fastqc -o outputs/fastqc {input}
+    #'''
 
 # fastqc (wrapper)
-rule fastqc:
-    input: expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-    output:
-        html = expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES),
-        zip = expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.zip', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
-    #conda: 'envs/qc.yml'
-    wrapper: '0.31.1/bio/fastqc'
+#rule fastqc:
+#    input: expand('outputs/fastq_split/{lane}_{plate}_R{read}_{sample}.fastq', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
+#    output:
+#        html = expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.html', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES),
+#        zip = expand('outputs/fastqc/{lane}_{plate}_R{read}_{sample}.fastqc.zip', lane=LANES, plate=PLATES, read=READS, sample=SAMPLES)
+#    #conda: 'envs/qc.yml'
+#    wrapper: '0.31.1/bio/fastqc'
 
 # multiqc with no wrapper
 #rule multiqc:
@@ -91,15 +91,15 @@ rule multiqc:
 rule align_fastq:
     input: 
         fq = expand('outputs/fastq_split/{{lane}}_{{plate}}_R{read}_{{sample}}.fastq', read = READS),
-	      ref = '/home/rapeek/projects/SEQS/final_contigs_300.fa'
+	ref = '/home/rapeek/projects/SEQS/final_contigs_300.fa'
     output: 'outputs/bams/{lane}_{plate}_{sample}.sort.bam'
     conda: 'envs/samtools_bwa.yml'
     threads: 4
     resources:
         mem_mb=4000,
-	      tmpdir=TMPDIR,
+ 	tmpdir=TMPDIR,
         time=2880
-    #benchmark: 'benchmarks/align_fastq_{lane}_{plate}_{sample}.tsv'
+     #benchmark: 'benchmarks/align_fastq_{lane}_{plate}_{sample}.tsv'
     shell:'''
         bwa mem -t {threads} {input.ref} {input.fq} | samtools view --threads {threads} -Sb - | samtools sort --threads {threads} - -o {output}
     '''
@@ -111,7 +111,7 @@ rule filter_bams:
     threads: 4
     resources:
         mem_mb=4000,
-	      tmpdir=TMPDIR,
+	# tmpdir=TMPDIR,
         time=2880
         #benchmark: 'benchmarks/filter_bams_{lane}_{plate}_{sample}.tsv'
     shell:'''
@@ -148,24 +148,22 @@ rule bam_alignment_stats:
         # total reads
         samtools flagstat {input} | sed -n 1p | cut -d' ' -f1 > {output}
         # mapped reads
-	      samtools flagstat {input} | sed -n 5p | cut -d' ' -f1 | paste -d' ' - {output}
+	samtools flagstat {input} | sed -n 5p | cut -d' ' -f1 | paste -d' ' - {output}
         # paired in sequencing
         samtools flagstat ${c1} | sed -n 8p | cut -d' ' -f1 >> count3_paired.txt
         # proper pairs
         samtools flagstat ${c1} | sed -n 9p | cut -d' ' -f1 >> count4_ppaired.txt
         # add header row
-	      #sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
+	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
         '''
 
 rule bam_depth:
     input: 'outputs/bams/{lane}_{plate}_{sample}.sort.flt.bam'
     output: 'outputs/stats/{lane}_{plate}_{sample}.depth'
-    params:
-        sampname='{lane}_{plate}_{sample}'
     threads: 2
     conda: 'envs/samtools_bwa.yml'
     shell:'''
-        samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print '{input}', sum/NR}}' > {output}
+        samtools depth {input} | awk '{{sum+=$3}} END {{if (NR > 0) print "{input}", sum/NR}}' > {output}
     '''
 
 #rule make_bamlist:
