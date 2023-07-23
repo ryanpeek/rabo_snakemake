@@ -48,6 +48,32 @@ dat_sc_all <- dat_sc %>% st_drop_geometry()
 # write all for PCA comparison
 bam_write(dat_sc_all, somms = "SOMM570", bamlist_name = "rabo_sc_all", extension = "sort.flt.bam")
 
+## Make Burros Bamlist --------------------------------------
+
+dat_sc_burro <- dat_sc %>% st_drop_geometry() %>% 
+  filter(river=="Burro_Ck")
+
+# write for PCA comparison
+bam_write(dat_sc_burro, somms = "SOMM570", bamlist_name = "rabo_sc_burro", extension = "sort.flt.bam")
+
+## Make SanCarpoforos Bamlist --------------------------------------
+
+dat_sc_sancarp <- dat_sc %>% st_drop_geometry() %>% 
+  filter(river=="San Carpoforo")
+
+# write for PCA comparison
+bam_write(dat_sc_sancarp, somms = "SOMM570", bamlist_name = "rabo_sc_sancarp", extension = "sort.flt.bam")
+
+## Make Dutra Bamlist --------------------------------------
+
+dat_sc_dutra <- dat_sc %>% st_drop_geometry() %>% 
+  filter(river=="Dutra_Ck")
+
+# write for PCA comparison
+bam_write(dat_sc_dutra, somms = "SOMM570", bamlist_name = "rabo_sc_dutra", extension = "sort.flt.bam")
+
+
+
 # PUT BAMLIST ON CLUSTER -----------------------------------------
 
 # go to local dir with bamlists
