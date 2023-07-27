@@ -72,7 +72,19 @@ dat_sc_dutra <- dat_sc %>% st_drop_geometry() %>%
 # write for PCA comparison
 bam_write(dat_sc_dutra, somms = "SOMM570", bamlist_name = "rabo_sc_dutra", extension = "sort.flt.bam")
 
+## Make filtered bamlist (>20k reads) --------------
 
+# these data from the outputs/alignment_stats.txt, samples with >20k reads
+to_drop <- c('SOMM570_CATTTC_GGAGGCTAACTGCAGG','SOMM570_TGGTTC_GGTCCGTCTATGCAGG', 'SOMM570_TGGTTC_GGCCGTGAGATGCAGG', 'SOMM570_TGGTTC_GGACACTGACTGCAGG', 'SOMM570_TGGTTC_GGACATTGGCTGCAGG')
+
+
+dat_sc_20k <- dat_sc %>% 
+  mutate(sommid = glue('{seqsomm}_{plate_barcode}_{well_barcodefull}')) %>% 
+  filter(!sommid %in% to_drop)
+
+#mapview(dat_sc_20k, zcol="river")
+
+bam_write(dat_sc_20k, somms = "SOMM570", bamlist_name = "rabo_sc_20k", extension = "sort.flt.bam")
 
 # PUT BAMLIST ON CLUSTER -----------------------------------------
 
