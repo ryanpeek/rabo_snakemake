@@ -3,14 +3,14 @@
 #SBATCH --mail-user=rapeek@ucdavis.edu
 #SBATCH --mail-type=ALL
 #SBATCH -J sfs
-#SBATCH -o slurms/11_sfsMain.%j.out
+#SBATCH -o slurms/sfs_thetas.%j.out
 #SBATCH -p high
 #SBATCH -c 10
 #SBATCH -t 720
 
 
 # run with 
-# sbatch scripts/11_do_stuff.sh output/bamlists/sfs_list
+# sbatch scripts/do_stuff.sh output/bamlists/sfs_list
 
 mkdir -p outputs/results_sfs_folded  ### All output goes here ###
 
@@ -33,9 +33,9 @@ do
 
 		echo "#!/bin/bash" > ${pop}_folded.sh
 		echo "" >> ${pop}_folded.sh
-		echo "#SBATCH -o slurms/11_sfs_folded-%j.out" >> ${pop}_folded.sh
-		echo "#SBATCH -e slurms/11_sfs_folded-%j.err" >> ${pop}_folded.sh
-		echo "#SBATCH -J sfsPop" >> ${pop}_folded.sh
+		echo "#SBATCH -o slurms/sfs_theta_folded-%j.out" >> ${pop}_folded.sh
+		echo "#SBATCH -e slurms/sfs_theta_folded-%j.err" >> ${pop}_folded.sh
+		echo "#SBATCH -J sfs_theta" >> ${pop}_folded.sh
 		echo "" >> ${pop}_folded.sh
 		
 		# new method uses default sfs (fold after), this script assumes SFS exists

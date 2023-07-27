@@ -3,13 +3,13 @@
 #SBATCH --mail-user=rapeek@ucdavis.edu
 #SBATCH --mail-type=ALL
 #SBATCH -J sfs
-#SBATCH -o slurms/10_sfsMain.%j.out
+#SBATCH -o slurms/sfs_main.%j.out
 #SBATCH -c 4
 #SBATCH -p high
 #SBATCH -t 720
 
 # run with
-# sbatch 10_get_sfs_nosub.sh outputs/bamlists/sfs_pop_list
+# sbatch get_sfs_nosub.sh outputs/bamlists/sfs_pop_list
 
 mkdir -p outputs/results_sfs
 
@@ -29,8 +29,8 @@ do
         pop=$(sed -n ${x}p $infile)
                 echo "#!/bin/bash" > ${pop}_sfs.sh
                 echo "" >> ${pop}_sfs.sh
-		echo "#SBATCH -o slurms/10_sfsPop-%j.out" >> ${pop}_sfs.sh
-		echo "#SBATCH -e slurms/10_sfsPop-%j.err" >> ${pop}_sfs.sh
+		echo "#SBATCH -o slurms/sfs_pop-%j.out" >> ${pop}_sfs.sh
+		echo "#SBATCH -e slurms/sfs_pop-%j.err" >> ${pop}_sfs.sh
 		echo "#SBATCH -J sfsFold" >> ${pop}_sfs.sh
 		echo "" >> ${pop}_sfs.sh
 		

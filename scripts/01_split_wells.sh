@@ -2,8 +2,8 @@
 ##SBATCH --mail-user=rapeek@ucdavis.edu
 ##SBATCH --mail-type=ALL
 #SBATCH -J split
-#SBATCH -e slurms/03_split_wells.%j.err
-#SBATCH -o slurms/03_split_wells.%j.out
+#SBATCH -e slurms/split_wells.%j.err
+#SBATCH -o slurms/split_wells.%j.out
 #SBATCH -c 20
 #SBATCH -p high
 #SBATCH -t 5000

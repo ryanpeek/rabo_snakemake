@@ -3,8 +3,8 @@
 #SBATCH --mail-user=rapeek@ucdavis.edu
 #SBATCH --mail-type=ALL
 #SBATCH -J pca_ibs
-#SBATCH -e slurms/05_pca_ibs.%j.err
-#SBATCH -o slurms/05_pca_ibs.%j.out
+#SBATCH -e slurms/pca_ibs.%j.err
+#SBATCH -o slurms/pca_ibs.%j.out
 #SBATCH -c 20
 #SBATCH -p high
 #SBATCH --time=5-20:00:00
@@ -14,7 +14,7 @@ set -v # verbose -- all lines
 set -x # trace of all commands after expansion before execution
 
 # run script with
-#       sbatch --mem MaxMemPerNode 05_pcAngsd.sh bamlistNAME bams_dir outname
+#       sbatch --mem MaxMemPerNode pca.sh bamlistNAME bams_dir outname
 
 # bamlist
 bamlist=$1
