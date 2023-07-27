@@ -1,0 +1,4 @@
+#id tw tw_sd tp tp_sd tD tD_sd ns
+outputs/results_thetas/rabo_sc_burro_folded_gw_thetasWin.gz.pestPG 0.00853863 0.0301246 0.00727401 0.0359211 -0.0917269 0.083679 2299104
+outputs/results_thetas/rabo_sc_dutra_folded_gw_thetasWin.gz.pestPG 0.00856835 0.035052 0.00740876 0.046159 -0.0883091 0.163273 2916647
+outputs/results_thetas/rabo_sc_sancarp_folded_gw_thetasWin.gz.pestPG 0.00612555 0.040249 0.00678001 0.0495911 -0.0255804 0.119383 2823014
