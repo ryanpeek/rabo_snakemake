@@ -14,7 +14,7 @@ set -v # verbose -- all lines
 set -x # trace of all commands after expansion before execution
 
 # run script with
-#       sbatch --mem MaxMemPerNode pca.sh bamlistNAME bams_dir outname
+#       sbatch --mem MaxMemPerNode pca.sh bamlistNAME outname
 
 # bamlist
 bamlist=$1
