@@ -8,7 +8,11 @@
 #SBATCH -c 10
 #SBATCH -t 720
 
-mkdir -p results_sfs_folded  ### All output goes here ###
+
+# run with 
+# sbatch scripts/11_do_stuff.sh output/bamlists/sfs_list
+
+mkdir -p outputs/results_sfs_folded  ### All output goes here ###
 
 infile=$1 ### list containing population names ##
 #thresh=$2 # label for level of subsample/threshold used, i.e., 25k, or 100k
@@ -34,22 +38,19 @@ do
 		echo "" >> ${pop}_folded.sh
 		
 		# new method uses default sfs (fold after), this script assumes SFS exists
-		echo "realSFS results_sfs/${pop}.saf.idx -fold 1 > results_sfs_folded/${pop}.folded.sfs" >> ${pop}_folded.sh
+		echo "realSFS outputs/results_sfs/${pop}.saf.idx -fold 1 > outputs/results_sfs_folded/${pop}.folded.sfs" >> ${pop}_folded.sh
 		# bootstrap
-		echo "realSFS results_sfs/${pop}.saf.idx -bootstrap 100 -P 10 > results_sfs_folded/${pop}_b.folded.sfs" >> ${pop}_folded.sh
-
-		# make a plot
-		echo "~/scripts/plotSFS.R results_sfs_folded/${pop}.folded.sfs" >> ${pop}_folded.sh
+		echo "realSFS outputs/results_sfs/${pop}.saf.idx -bootstrap 100 -P 10 > outputs/results_sfs_folded/${pop}_b.folded.sfs" >> ${pop}_folded.sh
 
 		# calc thetas for each site:
-		mkdir -p results_thetas
+		mkdir -p outputs/results_thetas
 
 		# this makes .thetas.idx
-		echo "realSFS saf2theta results_sfs/${pop}.saf.idx -sfs results_sfs_folded/${pop}.folded.sfs -outname results_thetas/${pop}_folded" >> ${pop}_folded.sh
+		echo "realSFS saf2theta outputs/results_sfs/${pop}.saf.idx -sfs outputs/results_sfs_folded/${pop}.folded.sfs -outname outputs/results_thetas/${pop}_folded" >> ${pop}_folded.sh
 
 		# get logscale per site thetas with: thetaStat print out.thetas.idx 2>/dev/null | head
 		# get genome side theta stats with sliding window of one (every site), output is idx.pestPG
-		echo "thetaStat do_stat results_thetas/${pop}_folded.thetas.idx -win 1 -step 1 -outnames results_thetas/${pop}_folded_gw_thetasWin.gz" >> ${pop}_folded.sh
+		echo "thetaStat do_stat outputs/results_thetas/${pop}_folded.thetas.idx -win 1 -step 1 -outnames outputs/results_thetas/${pop}_folded_gw_thetasWin.gz" >> ${pop}_folded.sh
 
 		#sbatch -J rpfoldsfs --mem=16G -t 2880 -c 1 ${pop}_folded.sh
 		sbatch -J rpfoldsfs -t 720 -p high -c 1 ${pop}_folded.sh
