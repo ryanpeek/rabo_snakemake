@@ -18,6 +18,7 @@ infile=$1 ### list containing population names ##
 #thresh=$2 # label for level of subsample/threshold used, i.e., 25k, or 100k
 
 ## IMPORTANT!!! Reference must correspond to ancestral states, if not supply a different fasta file for -anc!!! ###
+
 # set reference alignment
 ref="/home/rapeek/projects/SEQS/final_contigs_300.fa"
 
