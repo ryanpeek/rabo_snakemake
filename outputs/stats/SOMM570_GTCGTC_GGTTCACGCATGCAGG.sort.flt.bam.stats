@@ -1,0 +1,38 @@
+raw total sequences:	156290
+filtered sequences:	0
+sequences:	156290
+is sorted:	1
+1st fragments:	77643
+last fragments:	78647
+reads mapped:	156290
+reads mapped and paired:	156290	# paired-end technology bit set + both mates mapped
+reads unmapped:	0
+reads properly paired:	156290	# proper-pair bit set
+reads paired:	156290	# paired-end technology bit set
+reads duplicated:	0	# PCR or optical duplicate bit set
+reads MQ0:	8078	# mapped and MQ=0
+reads QC failed:	0
+non-primary alignments:	0
+total length:	21099150	# ignores clipping
+total first fragment length:	10481805	# ignores clipping
+total last fragment length:	10617345	# ignores clipping
+bases mapped:	21099150	# ignores clipping
+bases mapped (cigar):	18518734	# more accurate
+bases trimmed:	0
+bases duplicated:	0
+mismatches:	819741	# from NM fields
+error rate:	4.426550e-02	# mismatches / bases mapped (cigar)
+average length:	135
+average first fragment length:	135
+average last fragment length:	135
+maximum length:	135
+maximum first fragment length:	135
+maximum last fragment length:	135
+average quality:	35.8
+insert size average:	175.0
+insert size standard deviation:	71.3
+inward oriented pairs:	72833
+outward oriented pairs:	5405
+pairs with other orientation:	5
+pairs on different chromosomes:	0
+percentage of properly paired reads (%):	100.0
