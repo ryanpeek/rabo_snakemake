@@ -20,14 +20,10 @@ source("scripts/functions/f_read_covmat.R")
 
 # Get covMat ---------------------------------------------------------------
 
-fileName <- "rabo_sc_all_run1"
+fileName <- "rabo_sc_20k"
 
-# no subsample
+# read in
 covar <- read_covmat(fileName)
-
-# with subsample
-#subsam <- "50k"
-#covar <- read_covmat(fileName, subsample = subsam)
 
 # Check for NAs and replace with zero
 sum(colSums(is.na(covar))) # if anything not zero, replace w zero for now
@@ -38,13 +34,13 @@ which(rowSums(is.na(covar))==nrow(covar))
 # apply(covar,2,function(x) which(rowSums(is.na(covar))==nrow(covar)))
 
 # col/row to drop
-toDROP <- which(rowSums(is.na(covar))==nrow(covar))
+# toDROP <- which(rowSums(is.na(covar))==nrow(covar))
 
 # any row with a NA
-covar[is.na(covar)] <- NA
+# covar[is.na(covar)] <- NA
 
 # drop missing
-covar <- remove_empty(covar, c("rows","cols"))
+# covar <- remove_empty(covar, c("rows","cols"))
 
 # any row with a 0 to just plot anyway
 # covar[is.na(covar)] <- 0
@@ -75,7 +71,7 @@ source("scripts/functions/f_join_covmat_bams.R")
 annot <- join_covmat_bams(fileName = fileName,  metadata = meta)
 
 # drop if needed
-annot <- annot[-toDROP,]
+# annot <- annot[-toDROP,]
 
 # Mapview Map -------------------------------------------------------------
 
@@ -110,7 +106,7 @@ colorN <- length(unique(PC$river)) # number of levels
 # Set Up PCs and Title ----------------------------------------------------
 
 # set up PCs to plot
-pcs <- c(1,2)
+pcs <- c(5,6)
 
 # PC's:
 pc1 <- pcs[1]
@@ -150,15 +146,10 @@ PC_filt <- PC
    ggtitle(paste0(title)))
 
 # plotly
-plotly::ggplotly(gg12a)
+#plotly::ggplotly(gg12a)
 
-## subsamp
-#ggsave(filename = glue("figs/{fileName}_{subsam}_pca_{pc1}_{pc2}.jpg"), width = 11, height = 8, units = "in", dpi=300)
+## no filter
+# ggsave(filename = glue("figs/{fileName}_pca_{pc1}_{pc2}.jpg"), width = 11, height = 8, units = "in", dpi=300)
 
-## no sub
-ggsave(filename = glue("figs/{fileName}_pca_{pc1}_{pc2}.jpg"), width = 11, height = 8, units = "in", dpi=300)
-# ggsave(filename = glue("figs/{fileName}_pca_{pc1}_{pc2}_filtered_20k.jpg"), width = 11, height = 8, units = "in", dpi=300)
-
-# plotly
-# library(plotly)
-# ggplotly(gg12a)
+# filtered
+ggsave(filename = glue("figs/{fileName}_pca_{pc1}_{pc2}_filtered_20k.jpg"), width = 11, height = 8, units = "in", dpi=300)
