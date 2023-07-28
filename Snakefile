@@ -128,9 +128,9 @@ rule bam_alignment_stats:
         # mapped reads
 	samtools flagstat {input} | sed -n 5p | cut -d' ' -f1 | paste -d' ' - {output}
         # paired in sequencing
-        samtools flagstat ${c1} | sed -n 8p | cut -d' ' -f1 >> count3_paired.txt
+        samtools flagstat {input} | sed -n 8p | cut -d' ' -f1 >> count3_paired.txt
         # proper pairs
-        samtools flagstat ${c1} | sed -n 9p | cut -d' ' -f1 >> count4_ppaired.txt
+        samtools flagstat {input} | sed -n 9p | cut -d' ' -f1 >> count4_ppaired.txt
         # add header row
 	#sed -i '1ibamfile\ttotal_aligns\tmapped_aligns\tpaired_aligns\tprop_pairs' alignment_stats.txt
         '''
