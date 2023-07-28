@@ -7,6 +7,7 @@ library(sf)
 library(glue)
 library(tigris)
 library(nhdplusTools)
+library(janitor)
 #library(arrow)
 #library(geoarrow) # remotes::install_github("paleolimbot/geoarrow")
 library(rmapshaper)
@@ -45,7 +46,7 @@ ca_cnty <- st_transform(ca_cnty, 3310)
 
 library(terra)
 hill <- terra::rast("/Users/rapeek/Downloads/kx-california-hillshade-30m-JPEG/ca_30m_hillshade.jpg")
-plot(hill$ca_30m_hillshade)
+#plot(hill$ca_30m_hillshade)
 crs(hill)
 
 # Get HUC Watersheds ------------------------------------------------------
@@ -59,9 +60,9 @@ h8 <- st_transform(huc8, 3310)
 # mapview::mapview(h8) # can view with mapview 18060006: Central Coastal 18060005: Salinas
 watershed <- c("Salinas", "Central Coastal")
 h8_sel <- h8 %>% filter(name %in% watershed)
-plot(h8_sel$geometry)
+#plot(h8_sel$geometry)
 h8_sel_mrg <- rmapshaper::ms_dissolve(h8_sel)
-plot(h8_sel_mrg$geometry)
+#plot(h8_sel_mrg$geometry)
 
 
 # CropHillshade -----------------------------------------------------------
@@ -69,9 +70,9 @@ plot(h8_sel_mrg$geometry)
 hill_crop <- crop(hill, h8_sel_mrg)
 hill_crop <- mask(hill_crop, terra::vect(ca))
 
-plot(hill_crop, axes=FALSE)
-plot(ca_cnty$geometry, add=TRUE)
-plot(h8_sel_mrg$geometry, border="blue", add=TRUE)
+#plot(hill_crop, axes=FALSE)
+#plot(ca_cnty$geometry, add=TRUE)
+#plot(h8_sel_mrg$geometry, border="blue", add=TRUE)
 
 ca_cnty_sel <- ca_cnty[h8_sel_mrg,]
 
@@ -85,7 +86,7 @@ st_crs(ca_water)==st_crs(h8_sel_mrg)
 ca_water_sel <- ca_water[h8_sel_mrg,] # select via spatial join
 ca_water_sel2 <- st_intersection(ca_water_sel, h8_sel_mrg)
 
-# Now Get Data ------------------------------------------------------------
+# Now Get NHD Data ------------------------------------------------------------
 
 # pull mainstem rivers and lakes for watershed
 shed_wb <- nhdplusTools::get_waterbodies(h8_sel_mrg) # water bodies
@@ -93,7 +94,33 @@ shed_wb <- nhdplusTools::get_waterbodies(h8_sel_mrg) # water bodies
 # get flowlines
 shed_rivs <- get_nhdplus(h8_sel_mrg)
 
+# Get Point Data --------------------------------------
+
+# select just SC sites
+sc_sites <- c("San Carpoforo Creek", "Dutra", "Burro")
+
+# read in metadata
+meta_df <- read_csv("samples/2022_metadata_seq_samples_joined.csv") %>% 
+   filter(!is.na(y)) %>%  # rm blank
+   st_as_sf(coords=c("x","y"), remove=FALSE, crs=4326) %>%
+   filter(grepl(glue_collapse(sc_sites,"|"), locality)) %>% 
+   mutate(river = case_when(
+      grepl("Dutra Creek", locality) ~ "Dutra_Ck",
+      grepl("Burro Creek", locality) ~ "Burro_Ck",
+      grepl("San Carpoforo", locality) ~ "San Carpoforo"), .before="locality") %>% 
+   mutate(sommseq = glue("{plate_name}_{well_barcodefull}"), .before=plate_name) %>% 
+   #remove_empty(c("cols","rows")) %>% 
+   remove_constant(na.rm=TRUE, quiet = FALSE)
+
+st_crs(meta_df)
+meta_df <- st_transform(meta_df, 3310)
+
+
 # Base Map ----------------------------------------------------------------
+library(scales)
+library(ggthemes)
+# scales::show_col(colorblind_pal()(8))
+
 
 # quick map
 plot(hill_crop, axes=FALSE)
@@ -102,6 +129,7 @@ plot(shed_rivs$geometry, col="steelblue4", lwd=shed_rivs$streamorde/4, add=TRUE)
 plot(ca_water_sel2$geometry, border="cyan4", col="cyan4", add=TRUE)
 plot(shed_wb$geometry, border="steelblue2", col=alpha("steelblue2",0.9), add=TRUE)
 plot(h8_sel_mrg$geometry, border="gray40", lwd=3, add=TRUE)
+plot(meta_df$geometry, pch=21, col="black", bg=alpha(colorblind_pal()(2)[2], 0.5), add=TRUE)
 title(main = glue("{watershed} Watershed"), family=fnt_headers)
 
 
@@ -120,6 +148,8 @@ ggplot() +
            linewidth=shed_rivs2$streamorde/6, show.legend = FALSE)+
    geom_sf(data=ca_water_sel2, fill="cyan4", color="cyan4")+
    geom_sf(data=shed_wb, fill=alpha("steelblue2", 0.9), color="steelblue2")+
+   # sample localities
+   geom_sf(data=meta_df, fill="#E69F00", pch=21, alpha=0.8, col="black", size=4) +
    geom_sf(data=h8_sel_mrg, fill=NA, color="gray40", linewidth=1.2)+
    theme_void(base_family = fnt_text) +
    labs(title = glue("{watershed} Watershed")) +
@@ -139,6 +169,7 @@ circle_buff <- center_proj %>%
   st_buffer(dist = dist) %>%
   st_transform(crs = 3310)
 plot(circle_buff$geometry)
+plot(meta_df$geometry, pch=21, cex=1.4, col="black", bg=alpha(colorblind_pal()(2)[2], 0.8), add=TRUE)
 
 # crop the data
 shed_rivs_crop <- shed_rivs2 %>%
@@ -163,6 +194,8 @@ hill_cir_crop <- mask(hill_cir_crop, circle_buff)
    geom_sf(data=shed_rivs2, color="steelblue4", linewidth=shed_rivs2$streamorde/6, show.legend = FALSE, alpha=0.6) +
    #geom_sf(data=ca_water_sel2, fill="cyan4", color="cyan4")+
    geom_sf(data=shed_wb, fill=alpha("steelblue2", 0.9), color="steelblue2")+
+    # sample points
+    geom_sf(data=meta_df, fill="white", pch=21, alpha=0.8, col="black", size=2) +
    # add the outline
    geom_sf(data=circle_buff, fill=NA, col="black", linewidth=.5)+
    coord_sf(expand = FALSE) +
@@ -184,9 +217,15 @@ hill_cir_crop <- mask(hill_cir_crop, circle_buff)
     geom_sf(data=circle_buff, fill="white", col="black", linewidth=1)+
     geom_spatraster(data=hill_cir_crop, show.legend = FALSE, interpolate = TRUE, maxcell = 2e6) +
     #scale_fill_hypso_c(palette = 'dem_print', alpha=0.5)+
-    scale_fill_hypso_c(palette = 'colombia_hypso', alpha=0.7)+
+    scale_fill_hypso_c(palette = 'colombia_hypso', alpha=0.5)+
+   # rivers
     geom_sf(data=shed_rivs_crop, color="steelblue4", linewidth=shed_rivs_crop$streamorde/6, show.legend = FALSE) +
     geom_sf(data=ca_water_crop, fill="cyan4", color="cyan4")+
+    # samples
+    geom_sf(data=meta_df %>% filter(river=="San Carpoforo"), fill="#009E73", pch=21, col="black", size=4) +
+    geom_sf(data=meta_df %>% filter(river=="Burro_Ck"), fill="#E69F00", pch=21, col="black", size=4) +
+    geom_sf(data=meta_df %>% filter(river=="Dutra_Ck"), fill="#CC79A7", pch=21, col="black", size=4) +
+    # watershed
     geom_sf(data=h8_sel_crop, fill=NA, color="brown4", linewidth=0.5, lty=1)+
     geom_sf(data=circle_buff, fill=NA, col="black", linewidth=1.5)+
     coord_sf(expand = 0.01) +
