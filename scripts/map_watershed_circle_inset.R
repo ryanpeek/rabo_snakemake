@@ -259,3 +259,9 @@ ggsave(plot = p1,
        width = 8.5, height = 11, units = "in")
 
 
+ggsave(plot = p1,
+       filename = glue("figs/map_{first(watershed)}_watershed_circle_inset_150dpi.png"),
+       bg="white", dpi=150, device = "png",
+       width = 8.5, height = 11, units = "in")
+
+
