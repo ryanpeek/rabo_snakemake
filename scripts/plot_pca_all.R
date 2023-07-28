@@ -106,7 +106,7 @@ colorN <- length(unique(PC$river)) # number of levels
 # Set Up PCs and Title ----------------------------------------------------
 
 # set up PCs to plot
-pcs <- c(5,6)
+pcs <- c(1,2)
 
 # PC's:
 pc1 <- pcs[1]
