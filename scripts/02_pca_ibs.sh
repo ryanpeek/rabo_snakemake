@@ -35,7 +35,8 @@ minInd=3
 # PCAngsd (http://www.popgen.dk/software/index.php/PCAngsd)
 
 # make sure to index
-angsd sites index baits_lengths.txt
+# angsd sites index bait_lengths.txt 
+
 
 ## First generate genotype likelihoods in Beagle format using angsd
 #angsd -bam ${bamlist} -out results_pca/${outname}_genolikes -doGlf 2 -doMajorMinor 1 -minMaf 0.05 -doMaf 2 -minInd ${minInd} -minMapQ 30 -minQ 20 -SNP_pval 1e-9 -GL 2 -nThreads 16 -ref $ref -sites bait_lengths.txt
